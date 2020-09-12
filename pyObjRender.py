@@ -132,6 +132,7 @@ class SingleObjectRender:
                 #version 330
                 uniform mat4 mvp;
                 uniform mat3 opencv_world2cam_rot;
+                uniform vec3 opencv_world2cam_translation;
 
                 in vec2 in_tc;
                 in vec3 in_vert;
@@ -144,7 +145,7 @@ class SingleObjectRender:
                 void main() {
                     gl_Position = mvp * vec4(in_vert, 1.0);
                     v_normal = opencv_world2cam_rot * in_normal;
-                    v_depth = gl_Position[2];
+                    v_depth = (opencv_world2cam_rot*in_vert + opencv_world2cam_translation)[2];
                     v_tex_coord = in_tc;
                 }
             ''',
@@ -265,6 +266,11 @@ class SingleObjectRender:
         # also set the 'opencv_world2cam_rot' uniform in shader, this will be used to rotate normal
         world2cam_rot = cam2world_R.T.astype(np.float32)
         self.prog['opencv_world2cam_rot'].write(world2cam_rot.T.tobytes())
+        
+        
+        world2cam_translation = -cam2world_R.T.astype(np.float32).dot(cam2world_t)
+        self.prog['opencv_world2cam_translation'].write(world2cam_translation.T.tobytes())
+        
         
     def render(self):
         self.ctx.clear(0.0, 0.0, 0.0, 0.0,depth=self.default_depth)
