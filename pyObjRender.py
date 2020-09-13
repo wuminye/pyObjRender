@@ -269,7 +269,7 @@ class SingleObjectRender:
         
         
         world2cam_translation = -cam2world_R.T.astype(np.float32).dot(cam2world_t)
-        self.prog['opencv_world2cam_translation'].write(world2cam_translation.T.tobytes())
+        self.prog['opencv_world2cam_translation'].write(world2cam_translation.T.astype(np.float32).tobytes())
         
         
     def render(self):
